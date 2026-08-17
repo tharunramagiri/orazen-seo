@@ -23,13 +23,13 @@ export function buildFullMarkdown(
   const j = (data: unknown) => '```json\n' + JSON.stringify(data, null, 2) + '\n```'
   const lines: string[] = []
 
-  lines.push('# OpenSEO Publishing API Documentation', '')
+  lines.push('# Orazen SEO Publishing API Documentation', '')
 
   // 1. Overview
   lines.push('## 1. Overview', '')
-  lines.push('OpenSEO supports bidirectional content sync between your CMS/frontend and OpenSEO through JSON webhooks.', '')
-  lines.push('- **Outbound (OpenSEO → Your system):** OpenSEO pushes content to your configured endpoint when you trigger a sync.')
-  lines.push('- **Inbound (Your system → OpenSEO):** Your system sends content updates to OpenSEO\'s inbound endpoints using an API key.')
+  lines.push('Orazen SEO supports bidirectional content sync between your CMS/frontend and Orazen SEO through JSON webhooks.', '')
+  lines.push('- **Outbound (Orazen SEO → Your system):** Orazen SEO pushes content to your configured endpoint when you trigger a sync.')
+  lines.push('- **Inbound (Your system → Orazen SEO):** Your system sends content updates to Orazen SEO\'s inbound endpoints using an API key.')
   lines.push('- **Jobs:** Bulk sync operations run asynchronously. You receive a `job_id` and can poll for status.', '')
 
   // 2. Auth
@@ -89,7 +89,7 @@ export function buildFullMarkdown(
   lines.push('## 14. Field Schemas', '')
   const schemas = [
     { name: 'Post', fields: [
-      ['id', 'number', 'no', 'OpenSEO post ID'],
+      ['id', 'number', 'no', 'Orazen SEO post ID'],
       ['title_text', 'string', 'yes', 'Post title'],
       ['slug', 'string', 'no', 'URL-safe slug'],
       ['seo_title', 'string', 'no', 'SEO title'],
@@ -193,7 +193,7 @@ export function buildFullMarkdown(
   // === HYPERLINKS ===
   lines.push('---', '')
   lines.push('# Dictionary Hyperlinks', '')
-  lines.push('OpenSEO matches dictionary keywords within post content and stores character-offset-based matches per text field.', '')
+  lines.push('Orazen SEO matches dictionary keywords within post content and stores character-offset-based matches per text field.', '')
   lines.push('### HyperlinkMatch', '')
   lines.push(j({ keyword: 'A/B testing', description: 'A method of comparing...', matched_positions: [[45, 55]] }), '')
   lines.push('`matched_positions` is an array of `[start, end)` character offset tuples.', '')
