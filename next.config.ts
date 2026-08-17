@@ -34,6 +34,11 @@ const allowedDevOrigins: string[] = (() => {
 })()
 
 const nextConfig: NextConfig = {
+  // Standalone output produces a minimal, self-contained server bundle
+  // (server.js + only the node_modules actually used) — required for the
+  // multi-stage Docker build in Dockerfile.orazen.
+  output: 'standalone',
+
   // Do NOT use trailingSlash — the catch-all route normalizes paths instead.
   // skipTrailingSlashRedirect prevents Next.js from 308-redirecting
   // /api/aurora/foo/ → /api/aurora/foo
