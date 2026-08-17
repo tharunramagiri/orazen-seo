@@ -54,7 +54,7 @@ const VAULT_KEY_CATALOG: Record<string, VaultKeyConfig> = {
   },
   OPENSEO_OUTBOUND_KEY: {
     category: 'system',
-    label: 'OpenSEO outbound webhook key',
+    label: 'Orazen SEO outbound webhook key',
     envFallback: ['OPENSEO_OUTBOUND_KEY', 'AURORA_OUTBOUND_KEY'],
   },
 }
