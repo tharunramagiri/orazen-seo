@@ -1,5 +1,5 @@
 /**
- * OpenAPI 3.1 specification for Aurora / OpenSEO.
+ * OpenAPI 3.1 specification for Aurora / Orazen SEO.
  *
  * This is the single source of truth for API documentation.
  * The spec is served at /api/docs/openapi.json and rendered by Scalar.
@@ -128,10 +128,10 @@ const ref500: Response = { description: 'Internal server error', content: { 'app
 export const spec: Record<string, unknown> = {
   openapi: '3.1.0',
   info: {
-    title: 'OpenSEO API',
+    title: 'Orazen SEO API',
     version: '1.0.0',
     description: `
-**OpenSEO** is an AI-powered SEO content platform for generating, managing, and publishing blog posts, dictionaries, and brand content.
+**Orazen SEO** is an AI-powered SEO content platform for generating, managing, and publishing blog posts, dictionaries, and brand content.
 
 ## Authentication
 Most endpoints require a Bearer token obtained via \`POST /api/auth/login\`.
@@ -151,7 +151,7 @@ Publishing inbound webhooks use API key authentication (\`x-api-key\` header).
 | \`x-request-id\` | Unique request identifier (returned on every response) |
 | \`deprecation\` | Present on legacy \`/api/aurora/*\` routes |
 `,
-    contact: { name: 'OpenSEO', url: 'https://openseo.ai' },
+    contact: { name: 'Orazen SEO', url: 'https://orazen.online' },
   },
 
   servers: [
