@@ -1,5 +1,23 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
+
+# Build-time placeholders so `next build` (which imports env-dependent modules
+# during static page-data collection) doesn't fail. Real secrets are injected
+# at container runtime via Dokploy environment variables.
+ARG AUTH_SECRET=build-placeholder-secret-not-used-at-runtime
+ARG OPENSEO_ENCRYPTION_KEY=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=
+ARG DATABASE_URL=postgresql://placeholder:placeholder@localhost:5432/placeholder
+ARG REDIS_URL=redis://localhost:6379
+ARG NEXT_PUBLIC_SITE_URL=https://seo.orazen.online
+ARG FRONTEND_URL=https://seo.orazen.online
+ENV AUTH_SECRET=$AUTH_SECRET
+ENV AUTH_TRUST_HOST=true
+ENV OPENSEO_ENCRYPTION_KEY=$OPENSEO_ENCRYPTION_KEY
+ENV DATABASE_URL=$DATABASE_URL
+ENV REDIS_URL=$REDIS_URL
+ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
+ENV FRONTEND_URL=$FRONTEND_URL
+
 COPY package*.json ./
 COPY prisma ./prisma
 RUN npm ci
