@@ -5,10 +5,10 @@ import { Providers } from '@/components/providers'
 
 export const metadata: Metadata = {
   title: {
-    template: '%s — OpenSEO',
-    default: 'OpenSEO',
+    template: '%s — Orazen SEO',
+    default: 'Orazen SEO',
   },
-  description: 'OpenSEO is a self-hostable AI-powered SEO content platform.',
+  description: 'Orazen SEO is an AI-powered SEO content platform, deployed and supported by Orazen.',
   icons: { icon: '/favicon.ico' },
 }
 
