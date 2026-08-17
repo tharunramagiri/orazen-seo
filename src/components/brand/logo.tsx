@@ -6,7 +6,7 @@ interface LogoProps {
   light?: boolean
 }
 
-export function OpenSeoLogo({ className, size = 28, light = false }: LogoProps) {
+export function OrazenSeoLogo({ className, size = 28, light = false }: LogoProps) {
   return (
     <svg
       width={size}
@@ -18,22 +18,22 @@ export function OpenSeoLogo({ className, size = 28, light = false }: LogoProps) 
     >
       <path
         d="M16 2L3 28h5.5l2.5-5h10l2.5 5H29L16 2Zm0 9l4 8h-8l4-8Z"
-        fill={light ? '#FFFFFF' : '#0078D4'}
+        fill={light ? '#FFFFFF' : '#F0460E'}
         fillRule="evenodd"
       />
     </svg>
   )
 }
 
-export function OpenSeoWordmark({ className, light = false }: { className?: string; light?: boolean }) {
+export function OrazenSeoWordmark({ className, light = false }: { className?: string; light?: boolean }) {
   return (
     <div className={cn('flex items-center gap-2.5', className)}>
-      <OpenSeoLogo size={28} light={light} />
+      <OrazenSeoLogo size={28} light={light} />
       <span className={cn(
         'text-[15px] font-semibold tracking-tight',
         light ? 'text-white' : 'text-foreground'
       )}>
-        OpenSEO
+        Orazen SEO
       </span>
     </div>
   )
