@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { OpenSeoLogo } from '@/components/brand/logo'
+import { OrazenSeoLogo } from '@/components/brand/logo'
 
 export function SiteFooter() {
   return (
@@ -8,8 +8,8 @@ export function SiteFooter() {
         <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
           <div>
             <Link href="/landing" className="flex items-center gap-2">
-              <OpenSeoLogo size={20} />
-              <span className="text-[13px] font-semibold text-neutral-900">OpenSEO</span>
+              <OrazenSeoLogo size={20} />
+              <span className="text-[13px] font-semibold text-neutral-900">Orazen SEO</span>
             </Link>
             <p className="mt-3 text-[11px] leading-relaxed text-neutral-400">
               AI-powered content generation.
@@ -44,7 +44,7 @@ export function SiteFooter() {
         </div>
 
         <div className="mt-8 pt-5 border-t border-neutral-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <p className="text-[11px] text-neutral-400">© {new Date().getFullYear()} OpenSEO. All rights reserved.</p>
+          <p className="text-[11px] text-neutral-400">© {new Date().getFullYear()} Orazen SEO. All rights reserved.</p>
           <Link href="/sitemap.xml" className="text-[11px] text-neutral-400 hover:text-blue-600">Sitemap</Link>
         </div>
       </div>
