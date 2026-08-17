@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import { Menu, X } from 'lucide-react'
 import { useState } from 'react'
-import { OpenSeoLogo } from '@/components/brand/logo'
+import { OrazenSeoLogo } from '@/components/brand/logo'
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false)
@@ -12,8 +12,8 @@ export function SiteHeader() {
     <header className="fixed top-0 z-50 w-full bg-white border-b border-neutral-200">
       <div className="mx-auto flex h-12 max-w-[1080px] items-center justify-between px-6">
         <Link href="/landing" className="flex items-center gap-2">
-          <OpenSeoLogo size={22} />
-          <span className="text-[14px] font-semibold text-neutral-900">OpenSEO</span>
+          <OrazenSeoLogo size={22} />
+          <span className="text-[14px] font-semibold text-neutral-900">Orazen SEO</span>
         </Link>
 
         <nav className="hidden items-center gap-5 md:flex">
@@ -23,7 +23,7 @@ export function SiteHeader() {
 
         <div className="hidden md:flex items-center gap-4">
           <Link href="/login" className="text-[13px] text-blue-600">Sign in</Link>
-          <Link href="/register" className="text-[13px] font-semibold text-white px-4 py-[6px] bg-blue-600 rounded-sm">Try OpenSEO free</Link>
+          <Link href="/register" className="text-[13px] font-semibold text-white px-4 py-[6px] bg-blue-600 rounded-sm">Try Orazen SEO free</Link>
         </div>
 
         <button className="md:hidden text-neutral-600" onClick={() => setOpen((v) => !v)}>
