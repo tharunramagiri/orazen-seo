@@ -68,7 +68,7 @@ type UpsertProductInput = {
 /**
  * Upsert a product keyed on (companyId, externalId). This is the only
  * correct way to idempotently import a Shopify (or any other external)
- * product into OpenSEO — never key on the internal autoincrement PK.
+ * product into Orazen SEO — never key on the internal autoincrement PK.
  */
 export async function upsertByExternal(input: UpsertProductInput) {
   const { companyId, externalId, data } = input
