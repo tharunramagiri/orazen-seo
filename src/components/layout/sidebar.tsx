@@ -20,7 +20,7 @@ import {
   LogOut,
   ExternalLink,
 } from 'lucide-react'
-import { OpenSeoLogo } from '@/components/brand/logo'
+import { OrazenSeoLogo } from '@/components/brand/logo'
 import { Button } from '@/components/ui/button'
 
 interface NavItem {
@@ -124,9 +124,9 @@ export function Sidebar() {
   return (
     <aside className="fixed left-0 top-0 z-40 flex h-screen w-[240px] flex-col bg-sidebar">
       <div className="flex h-12 items-center gap-2.5 px-4 border-b border-sidebar-border">
-        <OpenSeoLogo size={24} light />
+        <OrazenSeoLogo size={24} light />
         <span className="text-[15px] font-semibold text-white tracking-tight">
-          OpenSEO
+          Orazen SEO
         </span>
       </div>
 
@@ -179,7 +179,7 @@ export function Sidebar() {
               {userData?.name || userData?.email?.split('@')[0] || 'User'}
             </p>
             <p className="text-[11px] text-sidebar-foreground/50 truncate">
-              {userData?.company?.name || 'OpenSEO'}
+              {userData?.company?.name || 'Orazen SEO'}
             </p>
           </div>
           <Button
