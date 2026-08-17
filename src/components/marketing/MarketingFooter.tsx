@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { OpenSeoLogo } from '@/components/brand/logo'
+import { OrazenSeoLogo } from '@/components/brand/logo'
 
 const COLUMNS = [
   {
@@ -37,9 +37,9 @@ export function MarketingFooter() {
         <div className="grid gap-8 sm:grid-cols-2 md:grid-cols-4">
           <div>
             <Link href="/landing" className="flex items-center gap-2">
-              <OpenSeoLogo size={20} />
+              <OrazenSeoLogo size={20} />
               <span className="text-[13px] font-semibold" style={{ color: '#1A1A1A' }}>
-                OpenSEO
+                Orazen SEO
               </span>
             </Link>
             <p className="mt-3 text-[11px] leading-relaxed" style={{ color: '#A0A0A0' }}>
@@ -60,7 +60,7 @@ export function MarketingFooter() {
                   <li key={link.label}>
                     <Link
                       href={link.href}
-                      className="text-[12px] hover:text-[#0078D4] transition-colors"
+                      className="text-[12px] hover:text-[#F0460E] transition-colors"
                       style={{ color: '#616161' }}
                     >
                       {link.label}
@@ -77,11 +77,11 @@ export function MarketingFooter() {
           style={{ borderTop: '1px solid #E6E6E6' }}
         >
           <p className="text-[11px]" style={{ color: '#A0A0A0' }}>
-            © {new Date().getFullYear()} OpenSEO. All rights reserved.
+            © {new Date().getFullYear()} Orazen SEO. All rights reserved.
           </p>
           <Link
             href="/sitemap.xml"
-            className="text-[11px] hover:text-[#0078D4] transition-colors"
+            className="text-[11px] hover:text-[#F0460E] transition-colors"
             style={{ color: '#A0A0A0' }}
           >
             Sitemap
