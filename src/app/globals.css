@@ -1,0 +1,143 @@
+@import "tailwindcss";
+
+/* ─── Aurora × Azure Design System ────────────────────────────── */
+/* Light-only. Microsoft/Azure brand language.                     */
+
+@theme {
+  /* Core palette — Azure blue family */
+  --color-background: #F2F2F2;
+  --color-foreground: #1A1A1A;
+  --color-card: #FFFFFF;
+  --color-card-foreground: #1A1A1A;
+  --color-popover: #FFFFFF;
+  --color-popover-foreground: #1A1A1A;
+
+  /* Azure blue */
+  --color-primary: #0078D4;
+  --color-primary-foreground: #FFFFFF;
+  --color-primary-hover: #106EBE;
+  --color-primary-light: #DEECF9;
+
+  --color-secondary: #F5F5F5;
+  --color-secondary-foreground: #323130;
+
+  --color-muted: #F5F5F5;
+  --color-muted-foreground: #616161;
+
+  --color-accent: #F0F6FF;
+  --color-accent-foreground: #0078D4;
+
+  --color-destructive: #D13438;
+  --color-destructive-foreground: #FFFFFF;
+
+  --color-border: #E1E1E1;
+  --color-input: #E1E1E1;
+  --color-ring: #0078D4;
+
+  /* Semantic */
+  --color-success: #107C10;
+  --color-success-light: #DFF6DD;
+  --color-warning: #FFB900;
+  --color-warning-foreground: #835C00;
+  --color-warning-light: #FFF4CE;
+  --color-info: #0078D4;
+  --color-info-light: #DEECF9;
+
+  /* Sidebar — dark Azure nav */
+  --color-sidebar: #1B1B1F;
+  --color-sidebar-foreground: #D2D2D2;
+  --color-sidebar-muted: #2D2D30;
+  --color-sidebar-accent: #0078D4;
+  --color-sidebar-border: #3E3E42;
+  --color-sidebar-hover: #37373D;
+
+  /* Radius — Microsoft uses subtle, almost square */
+  --radius: 4px;
+  --radius-sm: 2px;
+  --radius-lg: 6px;
+  --radius-xl: 8px;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', 'Helvetica Neue', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* Scrollbar — subtle, Microsoft-style */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #C8C8C8;
+    border-radius: 4px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #A0A0A0;
+  }
+
+  ::selection {
+    background: #DEECF9;
+    color: #1A1A1A;
+  }
+}
+
+@layer utilities {
+  /* Azure gradient wash — light blue → white */
+  .azure-gradient {
+    background: linear-gradient(135deg, #EBF3FC 0%, #F2F2F2 60%, #FFFFFF 100%);
+  }
+
+  /* Azure hero gradient — dark blue band */
+  .azure-hero {
+    background: linear-gradient(135deg, #002050 0%, #0078D4 100%);
+  }
+
+  /* Fade in */
+  @keyframes azure-fade-in {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-in {
+    animation: azure-fade-in 0.3s ease-out both;
+  }
+
+  /* Stagger children */
+  .stagger > * {
+    animation: azure-fade-in 0.3s ease-out both;
+  }
+  .stagger > *:nth-child(1) { animation-delay: 0ms; }
+  .stagger > *:nth-child(2) { animation-delay: 40ms; }
+  .stagger > *:nth-child(3) { animation-delay: 80ms; }
+  .stagger > *:nth-child(4) { animation-delay: 120ms; }
+  .stagger > *:nth-child(5) { animation-delay: 160ms; }
+  .stagger > *:nth-child(6) { animation-delay: 200ms; }
+  .stagger > *:nth-child(7) { animation-delay: 240ms; }
+  .stagger > *:nth-child(8) { animation-delay: 280ms; }
+
+  /* Keyword hyperlinks injected by createHyperlinkedText */
+  a.hyperlink {
+    color: var(--color-primary);
+    text-decoration: underline;
+    text-decoration-color: var(--color-primary);
+    text-underline-offset: 2px;
+    text-decoration-thickness: 1px;
+    transition: color 0.15s, text-decoration-color 0.15s;
+  }
+  a.hyperlink:hover {
+    color: var(--color-primary-hover);
+    text-decoration-color: var(--color-primary-hover);
+  }
+}

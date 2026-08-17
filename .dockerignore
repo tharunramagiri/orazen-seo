@@ -1,0 +1,8 @@
+node_modules
+.next
+.git
+.env.local
+.backups
+compose.override.yml
+compose.dev.yml
+*.md

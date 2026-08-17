@@ -1,0 +1,888 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+/// --- Enums ---
+
+enum UserType {
+  DEMO
+  CLIENT
+  AGENCY
+  ADMINISTRATOR
+}
+
+enum TitleStatus {
+  TO_BE_GENERATED
+  APPROVED
+  REJECTED
+  GENERATED
+  PUBLISHED
+}
+
+enum TitleOperation {
+  NONE
+  POST_SYNCING
+  KEYWORD_SYNCING
+}
+
+// Element types are stored as plain strings to support AI-generated types
+// (tool_recommendation, case_study, checklist, etc.)
+
+enum DictionaryStatus {
+  IN_PROGRESS
+  KEYWORD_GENERATION
+  DEFINITION_GENERATION
+  COMPLETED
+}
+
+enum WordPriority {
+  HIGH
+  LOW
+}
+
+/// --- NextAuth + integrated user profile fields ---
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+
+  /// Auth
+  password    String?
+
+  userType    UserType  @default(DEMO)
+  companyId   Int?
+  demoExpiry  DateTime?
+
+  company  Company?   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  accounts Account[]
+  sessions Session[]
+
+  @@index([companyId])
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model SystemSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  category  String
+  label     String
+  hint      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+/// --- Core company ---
+
+model Company {
+  id            Int      @id @default(autoincrement())
+  name          String
+  business_type String
+  keywords      Json     @default("[]")
+  language      String
+  website_url   String?
+  created_at    DateTime @default(now())
+  updated_at    DateTime @default(now()) @updatedAt
+
+  aurora_enabled Boolean @default(false)
+  pulse_enabled  Boolean @default(false)
+  echo_enabled   Boolean @default(false)
+
+  settings     Json    @default("{}")
+  api_endpoint String?
+  api_key      String?
+  metadata     Json    @default("{\"business_description\":\"\",\"industry_description\":\"\"}")
+
+  /// Structured company profile extracted from website by AI
+  profile      Json?
+
+  users                    User[]
+  categories               Category[]
+  products                 Product[]
+  dictionaries             Dictionary[]
+  analytics_logs           AnalyticsLog[]
+  quillo_post_analyses     QuilloBlogPostAnalysisLog[]
+  quillo_company_analyses  QuilloCompanyAnalysisLog[]
+  campaigns                Campaign[]
+  bulk_schedules           BulkSchedule[]
+  titles                   Title[]
+  blog_posts               BlogPost[]
+  publishing_api_keys      PublishingApiKey[]
+  sync_jobs                SyncJob[]
+  sync_deliveries          SyncDelivery[]
+  sync_conflicts           SyncConflict[]
+  inbound_events           InboundEvent[]
+  background_jobs          BackgroundJob[]
+  share_links              ShareLink[]
+}
+
+/// --- Durable background job queue (P24A) ---
+///
+/// Generic Postgres-backed job table. Claimed atomically via
+/// `SELECT ... FOR UPDATE SKIP LOCKED` (see src/server/jobs/queue.ts).
+/// Intentionally independent of the domain-specific `SyncJob` model above.
+enum BackgroundJobStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELED
+}
+
+model BackgroundJob {
+  id           String              @id @default(cuid())
+  job_type     String
+  payload      Json                @default("{}")
+  status       BackgroundJobStatus @default(PENDING)
+  attempts     Int                 @default(0)
+  max_attempts Int                 @default(3)
+  next_run_at  DateTime            @default(now())
+  locked_at    DateTime?
+  locked_by    String?
+  result       Json?
+  error        String?
+  logs         Json                @default("[]")
+  companyId    Int?
+  created_at   DateTime            @default(now())
+  updated_at   DateTime            @updatedAt
+  started_at   DateTime?
+  finished_at  DateTime?
+
+  company Company? @relation(fields: [companyId], references: [id], onDelete: SetNull)
+
+  @@index([status, next_run_at])
+  @@index([job_type, status])
+  @@index([companyId])
+}
+
+/// --- Blog ---
+
+model BulkSchedule {
+  id            Int      @id @default(autoincrement())
+  name          String
+  start_date    DateTime?
+  interval_days Int?
+  created_at    DateTime @default(now())
+  companyId     Int?
+
+  company    Company?   @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  titles     Title[]
+  blog_posts BlogPost[]
+
+  @@index([companyId])
+}
+
+model Category {
+  id         Int      @id @default(autoincrement())
+  name       String
+  slug       String
+  created_at DateTime @default(now())
+  companyId  Int?
+
+  company    Company?    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  titles     Title[]
+  blog_posts BlogPost[]
+
+  @@unique([companyId, name])
+  @@unique([companyId, slug])
+  @@index([companyId])
+}
+
+model Title {
+  id             Int            @id @default(autoincrement())
+  companyId      Int?
+  title_text     String
+  slug           String
+  seo_title      String?
+  focus_keyword  String?
+  status         TitleStatus    @default(TO_BE_GENERATED)
+  operation      TitleOperation @default(NONE)
+  scheduled_date DateTime?
+  bulkScheduleId Int?
+  generated_date DateTime?
+  created_at     DateTime       @default(now())
+
+  /// Optional link to generated flattened blog post
+  blogPostId Int?      @unique
+  blogPost   BlogPost? @relation(fields: [blogPostId], references: [id], onDelete: SetNull)
+
+  company       Company?    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  bulk_schedule BulkSchedule? @relation(fields: [bulkScheduleId], references: [id], onDelete: SetNull)
+  categories    Category[]
+
+  post_linking_from TitlePostLink[] @relation("TitlePostLinkFrom")
+  post_linking_to   TitlePostLink[] @relation("TitlePostLinkTo")
+
+  @@unique([companyId, slug])
+  @@index([companyId])
+  @@index([status])
+  @@index([operation])
+  @@index([bulkScheduleId])
+}
+
+/// Flattened model: contains all Title + BlogPost fields.
+model BlogPost {
+  id             Int            @id @default(autoincrement())
+  companyId      Int?
+  title_text     String
+  slug           String
+  seo_title      String?
+  focus_keyword  String?
+  status         TitleStatus    @default(TO_BE_GENERATED)
+  operation      TitleOperation @default(NONE)
+  scheduled_date DateTime?
+  bulkScheduleId Int?
+  generated_date DateTime?
+  created_at     DateTime       @default(now())
+
+  cover_image      Json     @default("{}")
+  meta_description String?
+  excerpt          String?
+  image_generation Boolean  @default(false)
+  keyword_synced   Boolean  @default(false)
+  keyword_linked   Boolean  @default(false)
+  posts_synced     Boolean  @default(false)
+  reviewed         Boolean  @default(false)
+  last_updated     DateTime @updatedAt
+
+  company       Company?      @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  bulk_schedule BulkSchedule? @relation(fields: [bulkScheduleId], references: [id], onDelete: SetNull)
+
+  categories Category[]
+
+  sourceTitle Title?
+
+  share_links     ShareLink[]
+  publishes       BlogPublish[]
+  elements        BlogPostElement[]
+  quillo_analyses QuilloBlogPostAnalysisLog[]
+
+  post_linking_from BlogPostPostLink[] @relation("BlogPostPostLinkFrom")
+  post_linking_to   BlogPostPostLink[] @relation("BlogPostPostLinkTo")
+
+  @@unique([companyId, slug])
+  @@index([companyId])
+  @@index([status])
+  @@index([operation])
+  @@index([reviewed])
+  @@index([last_updated])
+  @@index([bulkScheduleId])
+}
+
+model TitlePostLink {
+  fromTitleId Int
+  toTitleId   Int
+
+  fromTitle Title @relation("TitlePostLinkFrom", fields: [fromTitleId], references: [id], onDelete: Cascade)
+  toTitle   Title @relation("TitlePostLinkTo", fields: [toTitleId], references: [id], onDelete: Cascade)
+
+  @@id([fromTitleId, toTitleId])
+  @@index([fromTitleId])
+  @@index([toTitleId])
+}
+
+model BlogPostPostLink {
+  fromBlogPostId Int
+  toBlogPostId   Int
+
+  fromBlogPost BlogPost @relation("BlogPostPostLinkFrom", fields: [fromBlogPostId], references: [id], onDelete: Cascade)
+  toBlogPost   BlogPost @relation("BlogPostPostLinkTo", fields: [toBlogPostId], references: [id], onDelete: Cascade)
+
+  @@id([fromBlogPostId, toBlogPostId])
+  @@index([fromBlogPostId])
+  @@index([toBlogPostId])
+}
+
+model ShareLink {
+  id              Int       @id @default(autoincrement())
+  postId          Int
+  companyId       Int
+  createdByUserId String?
+  token           String    @unique
+  enabled         Boolean   @default(true)
+  expiresAt       DateTime?
+  revokedAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  post    BlogPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  company Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([postId])
+  @@index([companyId])
+  @@index([token])
+  @@index([revokedAt])
+}
+
+model BlogPublish {
+  id             Int      @id @default(autoincrement())
+  blogPostId     Int
+  sync_date      DateTime @default(now())
+  remote_id      String?
+  related_synced Boolean  @default(false)
+
+  blog_post BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+
+  @@index([blogPostId])
+}
+
+model BlogPostElement {
+  id           Int                 @id @default(autoincrement())
+  blogPostId   Int
+  element_type String
+  order        Int
+  content      Json
+  created_at   DateTime            @default(now())
+
+  blog_post BlogPost          @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  hyperlink ElementHyperlink?
+
+  @@index([blogPostId])
+  @@index([order])
+}
+
+model ElementHyperlink {
+  id                Int      @id @default(autoincrement())
+  blogPostElementId Int      @unique
+  matched_keywords  Json
+  created_at        DateTime @default(now())
+
+  blog_post_element BlogPostElement @relation(fields: [blogPostElementId], references: [id], onDelete: Cascade)
+}
+
+/// --- Products ---
+
+model Product {
+  id           Int      @id @default(autoincrement())
+  /// External identifier (e.g. Shopify GID or numeric id). Stored as text so we
+  /// can accept `gid://shopify/Product/123` as well as plain numerics without
+  /// risking overflow, and typed as optional because products created directly
+  /// in OpenSEO have no external source of truth.
+  externalId   String?
+  title        String
+  description  String
+  vendor       String
+  product_type String
+  companyId    Int?
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+
+  company  Company?         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  variants ProductVariant[]
+  images   ProductImage[]
+  tags     Tag[]
+
+  @@unique([companyId, externalId])
+  @@index([title])
+  @@index([vendor])
+  @@index([product_type])
+  @@index([companyId])
+}
+
+model ProductVariant {
+  id                 Int      @id @default(autoincrement())
+  productId          Int
+  /// Denormalized from Product.companyId so SKU uniqueness can be enforced
+  /// per merchant instead of globally. Nullable to mirror Product.companyId.
+  companyId          Int?
+  title              String
+  sku                String
+  price              Decimal  @db.Decimal(10, 2)
+  compare_at_price   Decimal? @db.Decimal(10, 2)
+  inventory_quantity Int
+  weight             Decimal? @db.Decimal(10, 2)
+  weight_unit        String?
+  requires_shipping  Boolean  @default(true)
+  taxable            Boolean  @default(true)
+  created_at         DateTime @default(now())
+  updated_at         DateTime @updatedAt
+
+  product Product       @relation(fields: [productId], references: [id], onDelete: Cascade)
+  images  ProductImage[]
+
+  @@unique([companyId, sku])
+  @@index([productId])
+  @@index([companyId])
+  @@index([title])
+  @@index([sku])
+}
+
+model ProductImage {
+  id         Int      @id @default(autoincrement())
+  productId  Int
+  variantId  Int?
+  src        String
+  alt_text   String?
+  position   Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  product Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
+  variant ProductVariant? @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([variantId])
+}
+
+model Tag {
+  id        Int    @id @default(autoincrement())
+  name      String
+  productId Int
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, name])
+  @@index([name])
+  @@index([productId])
+}
+
+/// --- Dictionary ---
+
+model Dictionary {
+  id             Int              @id @default(autoincrement())
+  title          String
+  subject        String
+  language       String
+  num_words      Int
+  current_letter String           @default("a")
+  status         DictionaryStatus @default(KEYWORD_GENERATION)
+  companyId      Int?
+  faqs           Json             @default("[]")
+  slug           String           @default("dictionary/")
+  created_at     DateTime         @default(now())
+  updated_at     DateTime         @default(now()) @updatedAt
+
+  company Company? @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  words   Word[]
+
+  @@unique([companyId, slug])
+  @@index([companyId])
+}
+
+model Word {
+  id            Int          @id @default(autoincrement())
+  dictionaryId  Int
+  letter        String
+  keyword       String
+  description   String
+  priority      WordPriority @default(HIGH)
+  focus_keyword String?
+
+  dictionary Dictionary            @relation(fields: [dictionaryId], references: [id], onDelete: Cascade)
+  definition DictionaryDefinition?
+
+  @@unique([dictionaryId, keyword])
+  @@index([dictionaryId])
+}
+
+model DictionaryDefinition {
+  id                      Int    @id @default(autoincrement())
+  wordId                  Int    @unique
+  title                   String
+  seo_title               String?
+  featured_google_snippet String
+  meta_description        String
+  title1                  String
+  text1                   String
+  title2                  String
+  text2                   String
+  title3                  String
+  text3                   String
+  synonyms                Json   @default("[]")
+  antonyms                Json   @default("[]")
+  usage_examples          Json   @default("[]")
+  related_keywords        Json   @default("[]")
+  faqs                    Json   @default("[]")
+
+  word Word @relation(fields: [wordId], references: [id], onDelete: Cascade)
+}
+
+/// --- Analytics & Quillo ---
+
+model AnalyticsLog {
+  id          Int      @id @default(autoincrement())
+  companyId   Int
+  json_data   Json
+  created_at  DateTime @default(now())
+  last_synced DateTime @default(now())
+
+  company         Company                    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  quillo_analyses QuilloCompanyAnalysisLog[]
+
+  @@index([companyId])
+}
+
+model QuilloBlogPostAnalysisLog {
+  id                   Int      @id @default(autoincrement())
+  companyId            Int
+  blogPostId           Int
+  analysis_data        Json
+  openai_response_data Json?
+  messages             Json     @default("[]")
+  created_at           DateTime @default(now())
+
+  company   Company  @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  blog_post BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([blogPostId])
+}
+
+model QuilloCompanyAnalysisLog {
+  id             Int      @id @default(autoincrement())
+  companyId      Int
+  analyticsLogId Int?
+  analysis_data  Json
+  created_at     DateTime @default(now())
+
+  company       Company       @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  analytics_log AnalyticsLog? @relation(fields: [analyticsLogId], references: [id], onDelete: SetNull)
+
+  @@index([companyId])
+  @@index([analyticsLogId])
+}
+
+/// --- Templates & CTA ---
+
+model BlogElementTemplate {
+  id           Int                     @id @default(autoincrement())
+  name         String                  @unique
+  slug         String                  @unique
+  element_type String
+  structure    Json
+  created_at   DateTime                @default(now())
+}
+
+model Campaign {
+  id         Int      @id @default(autoincrement())
+  name       String
+  companyId  Int
+  created_at DateTime @default(now())
+  updated_at DateTime @updatedAt
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  ctas    CTA[]
+
+  @@index([companyId])
+}
+
+model CTA {
+  id          Int      @id @default(autoincrement())
+  campaignId  Int
+  title       String
+  description String
+  image       String
+  link        String
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([campaignId])
+}
+
+enum SyncJobType {
+  POSTS_PUSH_ALL
+  POSTS_PUSH_ONE
+  DICTIONARY_PUSH_ALL
+  DICTIONARY_PUSH_ONE
+  POSTS_PULL
+  DICTIONARY_PULL
+}
+
+enum SyncJobStatus {
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+enum SyncEntityType {
+  POST
+  DICTIONARY
+  TERM
+}
+
+model PublishingApiKey {
+  id          Int      @id @default(autoincrement())
+  companyId   Int
+  name        String
+  key_prefix  String
+  key_hash    String
+  is_active   Boolean  @default(true)
+  last_used_at DateTime?
+  created_at  DateTime @default(now())
+  revoked_at  DateTime?
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([is_active])
+}
+
+model SyncJob {
+  id          String       @id @default(cuid())
+  companyId   Int
+  type        SyncJobType
+  status      SyncJobStatus @default(QUEUED)
+  payload     Json         @default("{}")
+  summary     Json         @default("{}")
+  error       String?
+  created_at  DateTime     @default(now())
+  started_at  DateTime?
+  finished_at DateTime?
+
+  company    Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  deliveries SyncDelivery[]
+
+  @@index([companyId])
+  @@index([status])
+  @@index([type])
+}
+
+model SyncDelivery {
+  id            String         @id @default(cuid())
+  companyId     Int
+  syncJobId     String?
+  entity_type   SyncEntityType
+  entity_id     String
+  event_type    String
+  event_id      String         @unique
+  endpoint      String
+  request_body  Json
+  response_body Json?
+  status_code   Int?
+  success       Boolean        @default(false)
+  attempts      Int            @default(0)
+  created_at    DateTime       @default(now())
+  delivered_at  DateTime?
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  syncJob SyncJob? @relation(fields: [syncJobId], references: [id], onDelete: SetNull)
+
+  @@index([companyId])
+  @@index([syncJobId])
+  @@index([event_type])
+}
+
+model SyncConflict {
+  id              String         @id @default(cuid())
+  companyId       Int
+  entity_type     SyncEntityType
+  local_entity_id String
+  remote_entity_id String?
+  local_snapshot  Json
+  remote_snapshot Json
+  resolution      String?
+  resolved_at     DateTime?
+  created_at      DateTime       @default(now())
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@index([companyId])
+  @@index([entity_type])
+}
+
+model InboundEvent {
+  id          String   @id @default(cuid())
+  companyId   Int
+  event_id    String
+  event_type  String
+  payload     Json
+  processed   Boolean  @default(false)
+  created_at  DateTime @default(now())
+  processed_at DateTime?
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, event_id])
+  @@index([companyId])
+}
+
+/// --- Example / Customer Site (published content) ---
+/// These tables store content synced from Aurora to the customer-facing site.
+/// Scoped by companyId so each company's published content is isolated.
+
+model ExamplePost {
+  id          String   @id @default(cuid())
+  companyId   Int
+  auroraId    Int?
+  slug        String
+  title       String
+  excerpt     String   @default("")
+  coverImage  String   @default("")
+  publishedAt String
+  seoTitle    String?
+  focusKeyword String?
+  metaDescription String?
+  status      String   @default("published")
+  syncedAt    DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  elements ExampleElement[]
+
+  @@unique([companyId, slug])
+  @@unique([companyId, auroraId])
+  @@index([companyId])
+  @@map("example_posts")
+}
+
+model ExampleElement {
+  id          String @id @default(cuid())
+  auroraId    String?
+  postId      String
+  order       Int
+  elementType String
+  content     Json
+
+  post ExamplePost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([postId])
+  @@map("example_elements")
+}
+
+model ExampleDictionary {
+  id          String   @id @default(cuid())
+  companyId   Int
+  auroraId    Int?
+  name        String
+  description String   @default("")
+  subject     String?
+  language    String?
+  syncedAt    DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  words ExampleWord[]
+
+  @@unique([companyId, auroraId])
+  @@index([companyId])
+  @@map("example_dictionaries")
+}
+
+model ExampleWord {
+  id           String  @id @default(cuid())
+  auroraId     String?
+  dictionaryId String
+  keyword      String
+  letter       String?
+  description  String?
+  focusKeyword String?
+  definition   Json    @default("{}")
+
+  dictionary ExampleDictionary @relation(fields: [dictionaryId], references: [id], onDelete: Cascade)
+
+  @@unique([dictionaryId, keyword])
+  @@index([dictionaryId])
+  @@map("example_words")
+}
+
+/// --- Versus / Comparison Pages ---
+
+model ComparisonTool {
+  id              Int      @id @default(autoincrement())
+  name            String   @unique           // "Jasper AI"
+  slug            String   @unique           // "jasper"
+  tagline         String?
+  website_url     String?
+  logo_url        String?
+  description     String   @default("")
+
+  pricing         Json     @default("[]")    // [{ plan, price, features[] }]
+  features        Json     @default("[]")    // string[]
+  pros            Json     @default("[]")    // string[]
+  cons            Json     @default("[]")    // string[]
+  ratings         Json     @default("{}")    // { g2?, capterra?, trustpilot? }
+  target_audience String?
+
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+
+  comparisons_a   Comparison[] @relation("ComparisonToolA")
+  comparisons_b   Comparison[] @relation("ComparisonToolB")
+}
+
+model Comparison {
+  id               Int      @id @default(autoincrement())
+  slug             String   @unique           // "jasper-vs-copy-ai"
+  tool_a_id        Int
+  tool_b_id        Int
+
+  // SEO
+  title            String?                    // "Jasper vs Copy.ai (2026)"
+  meta_description String?
+
+  // Publishing
+  published        Boolean  @default(false)
+  published_at     DateTime?
+
+  created_at       DateTime @default(now())
+  updated_at       DateTime @updatedAt
+
+  tool_a           ComparisonTool @relation("ComparisonToolA", fields: [tool_a_id], references: [id], onDelete: Cascade)
+  tool_b           ComparisonTool @relation("ComparisonToolB", fields: [tool_b_id], references: [id], onDelete: Cascade)
+  elements         ComparisonElement[]
+
+  @@unique([tool_a_id, tool_b_id])
+  @@index([tool_a_id])
+  @@index([tool_b_id])
+  @@index([published])
+}
+
+model ComparisonElement {
+  id              Int      @id @default(autoincrement())
+  comparisonId    Int
+  element_type    String                    // see types below
+  order           Int
+  content         Json                      // shape depends on element_type
+  created_at      DateTime @default(now())
+
+  comparison      Comparison @relation(fields: [comparisonId], references: [id], onDelete: Cascade)
+
+  @@index([comparisonId])
+  @@index([order])
+}
