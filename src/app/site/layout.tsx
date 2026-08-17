@@ -3,8 +3,8 @@ import { MarketingHeader } from '@/components/marketing/MarketingHeader'
 import { MarketingFooter } from '@/components/marketing/MarketingFooter'
 
 export const metadata: Metadata = {
-  title: 'OpenSEO Blog & Dictionary',
-  description: 'OpenSEO-generated blog posts and SEO dictionary.',
+  title: 'Orazen SEO Blog & Dictionary',
+  description: 'Orazen SEO-generated blog posts and SEO dictionary.',
   robots: { index: true, follow: true },
 }
 
