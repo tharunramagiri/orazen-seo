@@ -16,7 +16,7 @@ const STEPS: Step[] = [
     target: '[data-tour="generate-post-btn"]',
     title: 'Generate a Post',
     content:
-      'Click here to generate your first blog post from a title in the queue. OpenSEO handles structure, SEO, and content automatically.',
+      'Click here to generate your first blog post from a title in the queue. Orazen SEO handles structure, SEO, and content automatically.',
     placement: 'bottom',
     skipBeacon: true,
   },
