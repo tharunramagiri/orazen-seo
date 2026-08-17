@@ -66,7 +66,7 @@ async function fetchPage(url: string): Promise<{ url: string; html: string } | n
     const res = await fetch(url, {
       signal: controller.signal,
       headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; OpenSEOBot/1.0; +https://openseo.ai)',
+        'User-Agent': 'Mozilla/5.0 (compatible; OrazenSEOBot/1.0; +https://orazen.online)',
         Accept: 'text/html',
       },
       redirect: 'follow',
