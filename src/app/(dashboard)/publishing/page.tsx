@@ -103,7 +103,7 @@ export default function PublishingPage() {
                 required
               />
               <p className="text-[11px] text-muted-foreground">
-                OpenSEO sends post and dictionary data to this URL when you sync.
+                Orazen SEO sends post and dictionary data to this URL when you sync.
               </p>
             </div>
 
