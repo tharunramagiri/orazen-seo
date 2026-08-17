@@ -11,8 +11,8 @@ import { Input } from '@/components/ui/input'
 import { ArrowRight, Loader2 } from 'lucide-react'
 
 function LoginForm() {
-  const [email, setEmail] = useState('admin@demo.com')
-  const [password, setPassword] = useState('admin')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
@@ -41,18 +41,8 @@ function LoginForm() {
         Sign in
       </h2>
       <p className="mt-1.5 text-[13px] text-muted-foreground">
-        to continue to OpenSEO
+        to continue to Orazen SEO
       </p>
-
-      <div className="mt-6 rounded-sm border border-info-light bg-info-light p-3">
-        <p className="text-[11px] font-semibold text-primary uppercase tracking-wide mb-1.5">
-          Demo Accounts
-        </p>
-        <div className="space-y-0.5 text-[12px] text-muted-foreground">
-          <p>Admin: <span className="font-semibold text-foreground">admin@demo.com</span> / <span className="font-semibold text-foreground">admin</span></p>
-          <p>Client: <span className="font-semibold text-foreground">client@demo.com</span> / <span className="font-semibold text-foreground">client</span></p>
-        </div>
-      </div>
 
       <form onSubmit={handleSubmit} className="mt-6 space-y-4">
         <div>
