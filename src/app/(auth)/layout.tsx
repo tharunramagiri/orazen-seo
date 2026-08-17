@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 
-import { OpenSeoLogo } from '@/components/brand/logo'
+import { OrazenSeoLogo } from '@/components/brand/logo'
 
 export const metadata: Metadata = {
   robots: { index: false, follow: false },
@@ -22,9 +22,9 @@ export default function AuthLayout({
 
         <div className="relative z-10 max-w-sm px-10 text-center">
           <div className="flex justify-center mb-6">
-            <OpenSeoLogo size={56} light />
+            <OrazenSeoLogo size={56} light />
           </div>
-          <h1 className="text-[28px] font-semibold text-white leading-tight">OpenSEO</h1>
+          <h1 className="text-[28px] font-semibold text-white leading-tight">Orazen SEO</h1>
           <p className="mt-1 text-[12px] font-medium uppercase tracking-[0.15em] text-white/50">
             self-hosted platform
           </p>
