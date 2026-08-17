@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { Menu, X } from 'lucide-react'
 import { useState } from 'react'
-import { OpenSeoLogo } from '@/components/brand/logo'
+import { OrazenSeoLogo } from '@/components/brand/logo'
 
 const NAV_ITEMS = [
   { label: 'Product', href: '/landing#features' },
@@ -28,9 +28,9 @@ export function MarketingHeader() {
     <header className="fixed top-0 z-50 w-full bg-white" style={{ borderBottom: '1px solid #E6E6E6' }}>
       <div className="mx-auto flex h-12 max-w-[1080px] items-center justify-between px-6">
         <Link href="/landing" className="flex items-center gap-2">
-          <OpenSeoLogo size={22} />
+          <OrazenSeoLogo size={22} />
           <span className="text-[14px] font-semibold" style={{ color: '#1A1A1A', letterSpacing: '-0.01em' }}>
-            OpenSEO
+            Orazen SEO
           </span>
         </Link>
 
@@ -41,7 +41,7 @@ export function MarketingHeader() {
               href={item.href}
               className="px-3 py-1 text-[13px] transition-colors"
               style={{
-                color: isActive(item.href) ? '#0078D4' : '#616161',
+                color: isActive(item.href) ? '#F0460E' : '#616161',
                 fontWeight: isActive(item.href) ? 600 : 400,
               }}
             >
@@ -51,15 +51,15 @@ export function MarketingHeader() {
         </nav>
 
         <div className="hidden items-center gap-4 md:flex">
-          <Link href="/login" className="text-[13px]" style={{ color: '#0078D4' }}>
+          <Link href="/login" className="text-[13px]" style={{ color: '#F0460E' }}>
             Sign in
           </Link>
           <Link
             href="/register"
             className="text-[13px] font-semibold text-white px-4 py-[6px]"
-            style={{ background: '#0078D4', borderRadius: 2 }}
+            style={{ background: '#F0460E', borderRadius: 2 }}
           >
-            Try OpenSEO free
+            Try Orazen SEO free
           </Link>
         </div>
 
@@ -77,7 +77,7 @@ export function MarketingHeader() {
               onClick={() => setOpen(false)}
               className="block py-2 text-[13px]"
               style={{
-                color: isActive(item.href) ? '#0078D4' : '#616161',
+                color: isActive(item.href) ? '#F0460E' : '#616161',
                 fontWeight: isActive(item.href) ? 600 : 400,
               }}
             >
@@ -85,15 +85,15 @@ export function MarketingHeader() {
             </Link>
           ))}
           <div className="mt-3 flex flex-col gap-2">
-            <Link href="/login" className="text-[13px] text-center py-2" style={{ color: '#0078D4' }}>
+            <Link href="/login" className="text-[13px] text-center py-2" style={{ color: '#F0460E' }}>
               Sign in
             </Link>
             <Link
               href="/register"
               className="block py-2 text-center text-[13px] font-semibold text-white"
-              style={{ background: '#0078D4', borderRadius: 2 }}
+              style={{ background: '#F0460E', borderRadius: 2 }}
             >
-              Try OpenSEO free
+              Try Orazen SEO free
             </Link>
           </div>
         </div>
