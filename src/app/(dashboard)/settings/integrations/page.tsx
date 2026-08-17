@@ -43,7 +43,7 @@ export default function IntegrationsPage() {
       <div className="flex items-center justify-between gap-3">
         <div>
           <h1 className="text-xl font-semibold">Integrations</h1>
-          <p className="text-sm text-muted-foreground">Manage provider keys stored in the encrypted OpenSEO vault.</p>
+          <p className="text-sm text-muted-foreground">Manage provider keys stored in the encrypted Orazen SEO vault.</p>
         </div>
         <Button asChild variant="outline">
           <Link href="/settings">Back to settings</Link>
