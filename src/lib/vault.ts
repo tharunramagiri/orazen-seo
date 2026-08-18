@@ -264,6 +264,13 @@ export const vault = {
           if (!response.ok) return { ok: false, error: `Pexels responded with ${response.status}` }
           return { ok: true }
         }
+        case 'OPENCODE_API_KEY': {
+          const response = await fetch('https://opencode.ai/zen/v1/models', {
+            headers: { Authorization: `Bearer ${value}` },
+          })
+          if (!response.ok) return { ok: false, error: `OpenCode Zen responded with ${response.status}` }
+          return { ok: true }
+        }
         default:
           return { ok: true }
       }
