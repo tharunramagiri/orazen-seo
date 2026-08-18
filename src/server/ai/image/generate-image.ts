@@ -131,7 +131,9 @@ export async function generateNanoBananaImage(
 
   try {
     const ai = new GoogleGenAI({ apiKey })
-    const modelName = model === 'pro' ? 'gemini-3-pro-image-preview' : 'gemini-2.5-flash-preview-image'
+    // NOTE: 'gemini-2.5-flash-preview-image' was retired by Google and no
+    // longer resolves (404). Correct current model ID is 'gemini-2.5-flash-image'.
+    const modelName = model === 'pro' ? 'gemini-3-pro-image-preview' : 'gemini-2.5-flash-image'
     const response = await ai.models.generateContent({
       model: modelName,
       contents: prompt || 'A professional blog header image',
@@ -153,7 +155,19 @@ export async function generateNanoBananaImage(
       prompt,
     }
   } catch (err) {
-    return { error: `Nano Banana: ${err instanceof Error ? err.message : String(err)}` }
+    const message = err instanceof Error ? err.message : String(err)
+    // Google's free-tier API keys have a hard 0-request quota for image
+    // generation models (separate from text-generation quota). Surface a
+    // clear, actionable message instead of a raw 429 stack trace.
+    if (message.includes('429') || message.toLowerCase().includes('quota')) {
+      return {
+        error:
+          'Nano Banana: Gemini image generation requires a billing-enabled Google AI account ' +
+          '(free-tier keys have a 0-request quota for image models). Add billing at ' +
+          'https://ai.google.dev, or use Ideogram / GPT Image instead.',
+      }
+    }
+    return { error: `Nano Banana: ${message}` }
   }
 }
 
