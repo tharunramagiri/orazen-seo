@@ -42,6 +42,12 @@ const VAULT_KEY_CATALOG: Record<string, VaultKeyConfig> = {
     hint: 'Get this from ai.google.dev',
     envFallback: ['GEMINI_API_KEY', 'GOOGLE_GENAI_API_KEY', 'GOOGLE_AI_API_KEY'],
   },
+  OPENCODE_API_KEY: {
+    category: 'ai',
+    label: 'OpenCode Zen API key',
+    hint: 'Get this from opencode.ai/workspace — gateway to GPT, Claude, Gemini, DeepSeek, and more',
+    envFallback: ['OPENCODE_API_KEY', 'OPENCODE_ZEN_API_KEY'],
+  },
   IDEOGRAM: {
     category: 'media',
     label: 'Ideogram API key',
