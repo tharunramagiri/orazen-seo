@@ -13,7 +13,7 @@ async function main() {
   const cases: Array<{ label: string; model: string }> = [
     { label: 'openai', model: 'gpt-5-mini' },
     { label: 'anthropic', model: 'claude-sonnet-4-5-20250929' },
-    { label: 'google', model: 'gemini-2.5-pro' },
+    { label: 'google', model: 'gemini-3.6-flash' }, // gemini-2.5-pro was retired by Google (404 for new keys)
   ]
 
   for (const c of cases) {
