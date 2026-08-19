@@ -121,3 +121,5 @@ Open `http://localhost:4720/setup`. Requires Node 22 and Docker.
 ## License
 
 [GPL-3.0-only](LICENSE)
+
+<!-- redeploy-marker: trigger webhook after queue cleanup -->
