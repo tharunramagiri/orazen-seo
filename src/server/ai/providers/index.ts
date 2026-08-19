@@ -48,13 +48,53 @@ function buildMessages(opts: CallModelOptions) {
   return msgs
 }
 
+/**
+ * Google's Gemini structured-output validator accepts only a restricted
+ * subset of JSON Schema / OpenAPI 3.0 (no `additionalProperties`, no
+ * `$schema`, `$id`, `$ref`, `const`, `examples`, etc.). OpenAI and Anthropic
+ * both accept standard JSON Schema including `additionalProperties: false`,
+ * so schemas authored against those providers reliably 400 against Gemini
+ * with "Unknown name \"additionalProperties\"" (or similar) errors.
+ *
+ * This strips the known-unsupported keywords recursively so the *same*
+ * schema definition can be reused across all three providers without each
+ * call site needing a Gemini-specific variant.
+ */
+const GEMINI_UNSUPPORTED_SCHEMA_KEYS = new Set([
+  'additionalProperties',
+  '$schema',
+  '$id',
+  '$ref',
+  '$defs',
+  'const',
+  'examples',
+  'default',
+])
+
+function sanitizeSchemaForGemini(schema: unknown): unknown {
+  if (Array.isArray(schema)) {
+    return schema.map(sanitizeSchemaForGemini)
+  }
+  if (schema && typeof schema === 'object') {
+    const out: Record<string, unknown> = {}
+    for (const [key, value] of Object.entries(schema as Record<string, unknown>)) {
+      if (GEMINI_UNSUPPORTED_SCHEMA_KEYS.has(key)) continue
+      out[key] = sanitizeSchemaForGemini(value)
+    }
+    return out
+  }
+  return schema
+}
+
 export async function callModel<T = unknown>(opts: CallModelOptions): Promise<CallModelResult<T>> {
   const provider = detectProvider(opts.model)
   const llm = await createModel(provider, opts)
   const messages = buildMessages(opts)
 
   if (opts.jsonSchema) {
-    const structured = llm.withStructuredOutput(opts.jsonSchema.schema, {
+    const schema =
+      provider === 'google' ? sanitizeSchemaForGemini(opts.jsonSchema.schema) : opts.jsonSchema.schema
+    const structured = llm.withStructuredOutput(schema, {
       name: opts.jsonSchema.name,
       includeRaw: true,
     })
